@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ 管理面板 - 蓝际边的小屋</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <nav class="navbar"></nav>
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="menu-item active" data-panel="works">📚 作品管理</div>
+            <div class="menu-item" data-panel="addWork">➕ 上传作品</div>
+            <div class="menu-item" data-panel="users">👥 用户管理</div>
+        </aside>
+
+        <main class="admin-content">
+            <div id="panel-works">
+                <h3>📚 所有作品</h3>
+                <div class="search-bar" style="margin:0 0 16px 0">
+                    <input type="text" class="form-input" id="adminSearch" placeholder="🔍 搜索作品...">
+                </div>
+                <div id="adminWorksList"></div>
+            </div>
+
+            <div id="panel-addWork" style="display:none">
+                <div class="card">
+                    <h3 class="card-title">➕ 上传新作品</h3>
+                    <form id="addWorkForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>📂 作品类型</label>
+                            <select class="form-input" id="workType" required>
+                                <option value="">请选择类型</option>
+                                <option value="novel">📖 小说</option>
+                                <option value="anime">📺 动画</option>
+                                <option value="manga">📚 漫画</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>📝 作品名称</label>
+                            <input type="text" class="form-input" id="workTitle" placeholder="给作品起个名字吧" required>
+                        </div>
+                        <div class="form-group">
+                            <label>✍️ 作者</label>
+                            <input type="text" class="form-input" id="workAuthor" placeholder="作者名" required>
+                        </div>
+                        <div class="form-group">
+                            <label>🖼️ 封面图片</label>
+                            <div class="upload-area" id="coverUploadArea">
+                                <div class="upload-preview" id="coverPreview" style="display:none">
+                                    <img id="coverPreviewImg" src="" alt="">
+                                </div>
+                                <div class="upload-placeholder" id="coverPlaceholder">
+                                    <span class="upload-icon">📷</span>
+                                    <span>点击或拖拽上传封面</span>
+                                </div>
+                                <input type="file" id="coverFileInput" accept="image/*" hidden>
+                            </div>
+                        </div>
+                        <div class="form-group" id="fileUploadGroup" style="display:none">
+                            <label>📁 上传文件（TXT 或 Epub）</label>
+                            <div class="upload-area" id="fileUploadArea">
+                                <div class="file-info" id="fileInfo" style="display:none">
+                                    <span class="file-name" id="fileName"></span>
+                                    <button type="button" class="btn btn-sm btn-danger" id="removeFileBtn">移除</button>
+                                </div>
+                                <div class="upload-placeholder" id="filePlaceholder">
+                                    <span class="upload-icon">📄</span>
+                                    <span>上传 txt 或 epub 文件</span>
+                                </div>
+                                <input type="file" id="fileInput" accept=".txt,.epub" hidden>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>🏷️ 标签（用逗号分隔）</label>
+                            <input type="text" class="form-input" id="workTags" placeholder="例如: 校园,恋爱,治愈" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📄 简介</label>
+                            <textarea class="form-input" id="workDesc" placeholder="写一段吸引人的简介..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="addWorkBtn">✅ 创建作品</button>
+                        <span class="text-muted" id="uploadStatus" style="margin-left:12px;display:none"></span>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">📑 章节管理</h3>
+                    <div class="form-group">
+                        <label>选择作品</label>
+                        <select class="form-input" id="chapterWorkSelect" onchange="loadChaptersForAdmin()">
+                            <option value="">请选择作品</option>
+                        </select>
+                    </div>
+                    <div id="chapterListAdmin" style="margin:16px 0"></div>
+
+                    <form id="addChapterForm">
+                        <input type="hidden" id="chapterWorkId">
+                        <div class="form-group">
+                            <label>📝 章节标题</label>
+                            <input type="text" class="form-input" id="chapterTitle" placeholder="例如: 第一章：开端" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📄 章节内容</label>
+                            <textarea class="form-input" id="chapterContent" placeholder="章节正文内容..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">➕ 添加章节</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="panel-users" style="display:none">
+                <h3>👥 用户列表</h3>
+                <div id="adminUsersList"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h3>✏️ 编辑作品</h3>
+            <form id="editWorkForm">
+                <input type="hidden" id="editWorkId">
+                <div class="form-group">
+                    <label>📝 作品名称</label>
+                    <input type="text" class="form-input" id="editWorkTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>✍️ 作者</label>
+                    <input type="text" class="form-input" id="editWorkAuthor" required>
+                </div>
+                <div class="form-group">
+                    <label>🏷️ 标签（逗号分隔）</label>
+                    <input type="text" class="form-input" id="editWorkTags" required>
+                </div>
+                <div class="form-group">
+                    <label>📄 简介</label>
+                    <textarea class="form-input" id="editWorkDesc" required></textarea>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button type="submit" class="btn btn-primary">💾 保存</button>
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/app.js"></script>
+</body>
+</html>
